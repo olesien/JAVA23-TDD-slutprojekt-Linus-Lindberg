@@ -27,10 +27,10 @@ public class ATM {
         return true;
     }
 
-    public double checkBalance() throws Exception {
+    public double checkBalance() throws NoUserFoundException {
         User bankUser = getBank().getUserById(currentUser.getId());
         if (bankUser == null) {
-            throw new Exception("User Not Found");
+            throw new NoUserFoundException("User Not Found");
         }
         return bankUser.getBalance();
     }
