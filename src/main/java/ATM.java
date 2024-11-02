@@ -2,16 +2,37 @@ public class ATM {
     private Bank bank;
     private User currentUser;
 
-    public boolean insertCard(String userId) {
-        return true;
+    public ATM(Bank bank) {  // Constructor injection
+        this.bank = bank;
+    }
+
+    public Bank getBank() {
+        return bank;
+    }
+
+    public boolean loggedIn = false;
+
+    public void setCurrentUser (User user) {
+        this.currentUser = user;
+    }
+
+    //Step one for a user is inserting the card.
+    public User insertCard(String userId) {
+        User user = getBank().getUserById(userId);
+        setCurrentUser(user);
+        return user;
     }
 
     public boolean enterPin(String pin) {
         return true;
     }
 
-    public double checkBalance() {
-        return 0.0;
+    public double checkBalance() throws Exception {
+        User bankUser = getBank().getUserById(currentUser.getId());
+        if (bankUser == null) {
+            throw new Exception("User Not Found");
+        }
+        return bankUser.getBalance();
     }
 
     public void deposit(double amount) {
