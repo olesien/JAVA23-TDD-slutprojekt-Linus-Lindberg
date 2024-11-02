@@ -9,6 +9,10 @@ public class Bank implements BankInterface {
         return users.get(id);
     }
 
+    public void updateUser(User user) {
+        users.replace(user.getId(), user);
+    }
+
     public boolean isCardLocked(String userId) {
         User user = users.get(userId);
         return user != null && user.isLocked();
