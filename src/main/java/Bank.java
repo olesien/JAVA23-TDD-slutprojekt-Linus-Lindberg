@@ -2,6 +2,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Bank implements BankInterface {
+
     private Map<String, User> users = new HashMap<>();
 
     public User getUserById(String id) {
@@ -15,5 +16,9 @@ public class Bank implements BankInterface {
 
     public static String getBankName() {
         return "MockBank";
+    }
+
+    public int getUserLength() {
+        return users.size();
     }
 }
