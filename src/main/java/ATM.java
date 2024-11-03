@@ -58,7 +58,7 @@ public class ATM {
 
             }
         bank.updateUser(latestUser);
-
+        setCurrentUser(latestUser);
         return false;
     }
 
@@ -70,11 +70,35 @@ public class ATM {
         return bankUser.getBalance();
     }
 
-    public void deposit(double amount) {
+    public double deposit(double amount) {
+        //Get latest instance of user from bank and double check pin code to make sure it's real
+        User latestUser = getLatestUser(this.currentUser.getId());
+
+        //Change the money by amount in user object
+        double bal = latestUser.deposit(amount);
+
+        //Save changes
+        bank.updateUser(latestUser);
+        setCurrentUser(latestUser);
+
+        //Return total amount
+        return bal;
+
     }
 
-    public boolean withdraw(double amount) {
-        return true;
+    public double withdraw(double amount) {
+        //Get latest instance of user from bank and double check pin code to make sure it's real
+        User latestUser = getLatestUser(this.currentUser.getId());
+
+        //Change the money by amount in user object
+        double bal = latestUser.withdraw(amount);
+
+        //Save changes
+        bank.updateUser(latestUser);
+        setCurrentUser(latestUser);
+
+        //Return total amount
+        return bal;
     }
 
 }

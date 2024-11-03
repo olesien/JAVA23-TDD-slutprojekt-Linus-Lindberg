@@ -125,5 +125,53 @@ class ATMTest {
         assertTrue(atm.loggedIn);
     }
 
+    @Test
+    @DisplayName("Null pin does not crash")
+    public void testThatNullDoesntCrash() {
+        // Arrange
+        User testUser = new User("id", "pin", 0.0);
+
+        // Stub the bank retrieval of user
+        when(bank.getUserById("id")).thenReturn(testUser);
+
+        atm.setCurrentUser(testUser);  // Set the user in the ATM
+
+        assertDoesNotThrow(() -> atm.enterPin(null));
+    }
+
+    @Test
+    @DisplayName("Deposit changes amount 10 to 20")
+    public void testDepositChangesAmount() {
+        // Arrange
+        User testUser = new User("id", "pin", 10.0);
+
+        // Stub the bank retrieval of user
+        when(bank.getUserById("id")).thenReturn(testUser);
+
+        //when(user.deposit(10.0)).thenReturn(20.0);
+
+        atm.setCurrentUser(testUser);  // Set the user in the ATM
+
+        assertDoesNotThrow(() -> atm.deposit(10.0));
+        assertEquals(atm.getCurrentUser().getBalance(), 20.0);
+    }
+
+    @Test
+    @DisplayName("Withdraw changes amount from 20 to 10")
+    public void testWithdrawChangesAmount() {
+        // Arrange
+        User testUser = new User("id", "pin", 20.0);
+
+        // Stub the bank retrieval of user
+        when(bank.getUserById("id")).thenReturn(testUser);
+
+        //when(user.deposit(10.0)).thenReturn(20.0);
+
+        atm.setCurrentUser(testUser);  // Set the user in the ATM
+
+        assertDoesNotThrow(() -> atm.withdraw(10.0));
+        assertEquals(atm.getCurrentUser().getBalance(), 10.0);
+    }
+
 
 }

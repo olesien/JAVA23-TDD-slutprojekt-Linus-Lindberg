@@ -23,6 +23,12 @@ public class User {
     public void lockCard() { this.isLocked = true; }
     public void incrementFailedAttempts() { this.failedAttempts++; }
     public void resetFailedAttempts() { this.failedAttempts = 0; }
-    public void deposit(double amount) { this.balance += amount; }
-    public void withdraw(double amount) { this.balance -= amount; }
+    public double deposit(double amount) {
+        this.balance += amount;
+        return this.balance;
+    }
+    public double withdraw(double amount) {
+        this.balance -= amount;
+        return this.balance;
+    }
 }
