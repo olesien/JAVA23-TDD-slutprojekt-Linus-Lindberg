@@ -12,7 +12,7 @@ public class BankTest {
 
     @Test
     public void testThatUsersIsEmpty() {
-        Bank bank = new Bank();
+        Bank bank = new Bank("test");
         assertEquals(bank.getUserLength(), 0);
     }
 }

@@ -3,7 +3,14 @@ import java.util.Map;
 
 public class Bank implements BankInterface {
 
-    private Map<String, User> users = new HashMap<>();
+    static String name;
+
+    private final Map<String, User> users = new HashMap<>();
+
+    Bank(String name) {
+        users.put("test", new User("test", "test", 10.0));
+        Bank.name = name;
+    }
 
     public User getUserById(String id) {
         return users.get(id);
@@ -19,7 +26,7 @@ public class Bank implements BankInterface {
     }
 
     public static String getBankName() {
-        return "MockBank";
+        return name;
     }
 
     public int getUserLength() {
