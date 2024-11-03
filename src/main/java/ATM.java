@@ -86,9 +86,13 @@ public class ATM {
 
     }
 
-    public double withdraw(double amount) {
+    public double withdraw(double amount) throws ExcessiveWithdrawAmount {
         //Get latest instance of user from bank and double check pin code to make sure it's real
         User latestUser = getLatestUser(this.currentUser.getId());
+
+        if (latestUser.getBalance() < amount) {
+            throw new ExcessiveWithdrawAmount("Can not withdraw this much.");
+        }
 
         //Change the money by amount in user object
         double bal = latestUser.withdraw(amount);

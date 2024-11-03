@@ -16,15 +16,18 @@ class ATMTest {
     @Mock
     private Bank bank;
 
-    @Mock
-    private User user;
+    User testUser = new User("id", "pin", 10.0);
 
     @InjectMocks
     private ATM atm;
 
     @BeforeEach
     public void setUp() {
+
         atm = new ATM(bank);  // Manually set atm each time
+        // Stub the bank retrieval of user
+        when(bank.getUserById("id")).thenReturn(testUser);
+        atm.setCurrentUser(testUser);  // Set the user in the ATM
     }
 
     @Test()
@@ -34,7 +37,7 @@ class ATMTest {
         atm.setCurrentUser(testUser);  // Set the user in the ATM
 
         // Stub the bank retrieval of user
-        when(bank.getUserById("id")).thenReturn(null);
+        when(bank.getUserById("id")).thenReturn(null); //This will override the previous stub.
 
         // Act and Assert
         assertThrows(NoUserFoundException.class, () -> atm.checkBalance());
@@ -42,26 +45,18 @@ class ATMTest {
         //verify(bank, times(1));
     }
     @Test
-    @DisplayName("Balance Is Empty")
-    public void testThatBalanceIsEmpty() throws NoUserFoundException { //Note that NoUserFoundException can never be thrown here.
-        // Arrange
-        User testUser = new User("id", "pin", 0.0);
-        atm.setCurrentUser(testUser);  // Set the user in the ATM
+    @DisplayName("Balance Is Ten")
+    public void testThatBalanceIsTen() throws NoUserFoundException { //Note that NoUserFoundException can never be thrown here.
 
         // Stub the bank retrieval of user
         when(bank.getUserById("id")).thenReturn(testUser);
 
-        assertEquals(0.0, atm.checkBalance());
+        assertEquals(10.0, atm.checkBalance());
     }
 
     @Test
     @DisplayName("Card function sets user")
     public void testThatCardFunctionSetsUser() {
-        // Arrange
-        User testUser = new User("id", "pin", 0.0);
-
-        // Stub the bank retrieval of user
-        when(bank.getUserById("id")).thenReturn(testUser);
 
         atm.insertCard("id");
 
@@ -72,13 +67,6 @@ class ATMTest {
     @Test
     @DisplayName("Card gets locked if more than 3 attempts fail")
     public void testThatCardGetsLocked() {
-        // Arrange
-        User testUser = new User("id", "pin", 0.0);
-
-        // Stub the bank retrieval of user
-        when(bank.getUserById("id")).thenReturn(testUser);
-
-        atm.setCurrentUser(testUser);  // Set the user in the ATM
 
         assertDoesNotThrow(() -> atm.enterPin("wrong"));
         assertDoesNotThrow(() -> atm.enterPin("wrong"));
@@ -91,13 +79,6 @@ class ATMTest {
     @Test
     @DisplayName("Card remains locked if more than 3 attempts fail")
     public void testThatCardRemainsLocked() {
-        // Arrange
-        User testUser = new User("id", "pin", 0.0);
-
-        // Stub the bank retrieval of user
-        when(bank.getUserById("id")).thenReturn(testUser);
-
-        atm.setCurrentUser(testUser);  // Set the user in the ATM
 
         assertDoesNotThrow(() -> atm.enterPin("wrong"));
         assertDoesNotThrow(() -> atm.enterPin("wrong"));
@@ -113,13 +94,6 @@ class ATMTest {
     @Test
     @DisplayName("Logged in set to true if pin is correct")
     public void testThatCorrectLoginWorks() {
-        // Arrange
-        User testUser = new User("id", "pin", 0.0);
-
-        // Stub the bank retrieval of user
-        when(bank.getUserById("id")).thenReturn(testUser);
-
-        atm.setCurrentUser(testUser);  // Set the user in the ATM
 
         assertDoesNotThrow(() -> atm.enterPin("pin"));
         assertTrue(atm.loggedIn);
@@ -128,50 +102,29 @@ class ATMTest {
     @Test
     @DisplayName("Null pin does not crash")
     public void testThatNullDoesntCrash() {
-        // Arrange
-        User testUser = new User("id", "pin", 0.0);
-
-        // Stub the bank retrieval of user
-        when(bank.getUserById("id")).thenReturn(testUser);
-
-        atm.setCurrentUser(testUser);  // Set the user in the ATM
-
         assertDoesNotThrow(() -> atm.enterPin(null));
     }
 
     @Test
     @DisplayName("Deposit changes amount 10 to 20")
     public void testDepositChangesAmount() {
-        // Arrange
-        User testUser = new User("id", "pin", 10.0);
-
-        // Stub the bank retrieval of user
-        when(bank.getUserById("id")).thenReturn(testUser);
-
-        //when(user.deposit(10.0)).thenReturn(20.0);
-
-        atm.setCurrentUser(testUser);  // Set the user in the ATM
 
         assertDoesNotThrow(() -> atm.deposit(10.0));
         assertEquals(atm.getCurrentUser().getBalance(), 20.0);
+        verify(bank, times(1)).updateUser(atm.getCurrentUser());
     }
-
     @Test
-    @DisplayName("Withdraw changes amount from 20 to 10")
+    @DisplayName("Withdraw changes amount from 10 to 0")
     public void testWithdrawChangesAmount() {
-        // Arrange
-        User testUser = new User("id", "pin", 20.0);
-
-        // Stub the bank retrieval of user
-        when(bank.getUserById("id")).thenReturn(testUser);
-
-        //when(user.deposit(10.0)).thenReturn(20.0);
-
-        atm.setCurrentUser(testUser);  // Set the user in the ATM
 
         assertDoesNotThrow(() -> atm.withdraw(10.0));
-        assertEquals(atm.getCurrentUser().getBalance(), 10.0);
+        assertEquals(atm.getCurrentUser().getBalance(), 0.0);
+        verify(bank, times(1)).updateUser(atm.getCurrentUser());;
     }
-
-
+    @Test
+    @DisplayName("Withdraw can not take an account into below 0")
+    public void testWithdrawCantGoNegative() {
+        assertThrows(ExcessiveWithdrawAmount.class, () -> atm.withdraw(20.01));
+        verify(bank, times(0)).updateUser(atm.getCurrentUser());;
+    }
 }

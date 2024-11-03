@@ -49,6 +49,9 @@ public class Main {
             showOptions(reader,atm, user);
         } catch (NoUserFoundException e) {
             throw new RuntimeException(e); //This should not be possible so we want to just end the application here
+        } catch (ExcessiveWithdrawAmount e) {
+            System.out.println("The amount you entered is more than your total balance. Please try again with a lower amount.");
+            showOptions(reader,atm, user);
         }
     }
 
