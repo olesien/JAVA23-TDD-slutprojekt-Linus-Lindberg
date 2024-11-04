@@ -113,6 +113,22 @@ class ATMTest {
         assertEquals(atm.getCurrentUser().getBalance(), 20.0);
         verify(bank, times(1)).updateUser(atm.getCurrentUser());
     }
+
+    @Test
+    @DisplayName("Deposit can't go below 0")
+    public void testDepositIsMinZero() {
+
+        assertThrows(InvalidAmount.class, () -> atm.deposit(-1));
+        verify(bank, times(0)).updateUser(atm.getCurrentUser());
+    }
+
+    @Test
+    @DisplayName("Withdraw can't go below 0")
+    public void testWithdrawIsMinZero() {
+
+        assertThrows(InvalidAmount.class, () -> atm.withdraw(-1));
+        verify(bank, times(0)).updateUser(atm.getCurrentUser());
+    }
     @Test
     @DisplayName("Withdraw changes amount from 10 to 0")
     public void testWithdrawChangesAmount() {
@@ -126,5 +142,36 @@ class ATMTest {
     public void testWithdrawCantGoNegative() {
         assertThrows(ExcessiveWithdrawAmount.class, () -> atm.withdraw(20.01));
         verify(bank, times(0)).updateUser(atm.getCurrentUser());;
+    }
+
+    @Test
+    @DisplayName("Invalid Transfer gives NoUserFoundException")
+    public void testTransferInvalidUser() {
+        assertThrows(NoUserFoundException.class, () -> atm.transferMoney("wrong", 1));
+    }
+
+    @Test
+    @DisplayName("Null Transfer gives NoUserFoundException")
+    public void testTransferNullUser() {
+        assertThrows(NoUserFoundException.class, () -> atm.transferMoney(null, 1));
+    }
+
+    @Test
+    @DisplayName("Can Not Transfer more than you have")
+    public void testTransferExcessiveAmount() {
+        assertThrows(ExcessiveWithdrawAmount.class, () -> atm.transferMoney("test2", 1000000000));
+    }
+
+    @Test
+    @DisplayName("Can Not Transfer less than zero")
+    public void testTransferFailOnLessThanZero() {
+        assertThrows(InvalidAmount.class, () -> atm.transferMoney("test2", -1));
+    }
+
+    @Test
+    @DisplayName("Valid transfer is success")
+    public void testTransferWorks() {
+        when(bank.transferMoney("id", "test2", 1)).thenReturn(true);
+        assertTrue(atm.transferMoney("test2", 1));
     }
 }

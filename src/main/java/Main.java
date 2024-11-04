@@ -5,7 +5,7 @@ import java.io.InputStreamReader;
 public class Main {
 
     public static void showOptions(BufferedReader reader, ATM atm, User user) {
-        System.out.println("Please choose what you would like to do\nA: Check balance\nB: Deposit Money\nC: Withdraw Money");
+        System.out.println("Please choose what you would like to do\nA: Check balance\nB: Deposit Money\nC: Withdraw Money\nD: Transfer Money\nE: Logout");
         try {
             String option = reader.readLine();
             switch (option.toLowerCase()) {
@@ -33,6 +33,22 @@ public class Main {
                     double currentAmount = atm.withdraw(amount);
                     System.out.println("Success! You now have: " + currentAmount);
                     showOptions(reader,atm, user);
+                    break;
+                }
+                case "d": {
+                    //Transfer money
+                    System.out.println("Transfer amount:");
+                    double amount = Double.parseDouble(reader.readLine());
+
+                    System.out.println("User ID:");
+                    String userId = reader.readLine();
+                    break;
+                }
+                case "e": {
+                    //Log out
+                    System.out.println("Successfully logged out!");
+                    System.out.println("Enter Card ID:");
+                    getCard(reader, atm);
                     break;
                 }
                 default: {

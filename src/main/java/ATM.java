@@ -105,4 +105,8 @@ public class ATM {
         return bal;
     }
 
+    public boolean transferMoney(String toUserId, double amount) {
+        return true;
+    }
+
 }
