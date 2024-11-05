@@ -9,6 +9,7 @@ public class Bank implements BankInterface {
 
     Bank(String name) {
         users.put("test", new User("test", "test", 10.0));
+        users.put("test2", new User("test2", "test2", 20.0));
         Bank.name = name;
     }
 
@@ -30,7 +31,7 @@ public class Bank implements BankInterface {
         return latestUser;
     }
 
-    public User withdraw(String userId, double amount)  throws NoUserFoundException, ExcessiveWithdrawAmount {
+    public User withdraw(String userId, double amount) throws NoUserFoundException, ExcessiveWithdrawAmount {
         User latestUser = users.get(userId);
         if (latestUser == null) {
             throw new NoUserFoundException("User Not Found");
@@ -48,7 +49,23 @@ public class Bank implements BankInterface {
         return user != null && user.isLocked();
     }
 
-    public boolean transferMoney(String fromUserId, String toUserId, double amount) {
+    public boolean transferMoney(String fromUserId, String toUserId, double amount) throws NoUserFoundException, ExcessiveWithdrawAmount, InvalidAmount {
+        if (amount <= 0) {
+            throw new InvalidAmount("Invalid Amount");
+        }
+        User fromUser = users.get(fromUserId);
+        User toUser = users.get(toUserId);
+        if (fromUser == null || toUser == null) {
+            throw new NoUserFoundException("User could not be found");
+        }
+        if (amount > fromUser.getBalance()) {
+            throw new ExcessiveWithdrawAmount("Not enough money");
+        }
+
+        //Transfer
+        fromUser.withdraw(amount);
+        toUser.deposit(amount);
+
         return true;
     }
 

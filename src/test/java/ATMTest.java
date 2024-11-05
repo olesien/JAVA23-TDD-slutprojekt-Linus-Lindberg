@@ -1,6 +1,4 @@
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -22,11 +20,13 @@ class ATMTest {
     private ATM atm;
 
     @BeforeEach
-    public void setUp() {
+    public void setUp(TestInfo testInfo) {
 
         atm = new ATM(bank);  // Manually set atm each time
         // Stub the bank retrieval of user
-        when(bank.getUserById("id")).thenReturn(testUser);
+        if (!testInfo.getTags().contains("NoUserStub")) { //We don't always want to stub the user, but we do most of the time
+            when(bank.getUserById("id")).thenReturn(testUser);
+        }
         atm.setCurrentUser(testUser);  // Set the user in the ATM
     }
 
@@ -144,34 +144,44 @@ class ATMTest {
         verify(bank, times(0)).updateUser(atm.getCurrentUser());;
     }
 
-    @Test
-    @DisplayName("Invalid Transfer gives NoUserFoundException")
-    public void testTransferInvalidUser() {
-        assertThrows(NoUserFoundException.class, () -> atm.transferMoney("wrong", 1));
-    }
-
+    @Tag("NoUserStub")
     @Test
     @DisplayName("Null Transfer gives NoUserFoundException")
-    public void testTransferNullUser() {
+    public void testTransferNullUser() throws NoUserFoundException, InvalidAmount, ExcessiveWithdrawAmount {
+        when(bank.transferMoney("id", null, 1)).thenThrow(new NoUserFoundException("Invalid"));
         assertThrows(NoUserFoundException.class, () -> atm.transferMoney(null, 1));
     }
 
+    @Tag("NoUserStub")
     @Test
     @DisplayName("Can Not Transfer more than you have")
-    public void testTransferExcessiveAmount() {
+    public void testTransferExcessiveAmount() throws NoUserFoundException, InvalidAmount, ExcessiveWithdrawAmount {
+        when(bank.transferMoney("id", "test2", 1000000000)).thenThrow(new ExcessiveWithdrawAmount("Invalid"));
         assertThrows(ExcessiveWithdrawAmount.class, () -> atm.transferMoney("test2", 1000000000));
     }
 
+    @Tag("NoUserStub")
+    @Test
+    @DisplayName("Can Not Transfer to invalid user")
+    public void testInvalidUserTransfer() throws NoUserFoundException, InvalidAmount, ExcessiveWithdrawAmount {
+        when(bank.transferMoney("id", "test2", 1)).thenThrow(new NoUserFoundException("Invalid"));
+        assertThrows(NoUserFoundException.class, () -> atm.transferMoney("test2", 1));
+    }
+
+    @Tag("NoUserStub")
     @Test
     @DisplayName("Can Not Transfer less than zero")
-    public void testTransferFailOnLessThanZero() {
+    public void testTransferFailOnLessThanZero() throws NoUserFoundException, InvalidAmount, ExcessiveWithdrawAmount {
+        when(bank.transferMoney("id", "test2", -1)).thenThrow(new InvalidAmount("Invalid"));
         assertThrows(InvalidAmount.class, () -> atm.transferMoney("test2", -1));
     }
 
+    @Tag("NoUserStub")
     @Test
     @DisplayName("Valid transfer is success")
-    public void testTransferWorks() {
+    public void testTransferWorks() throws NoUserFoundException, ExcessiveWithdrawAmount, InvalidAmount {
         when(bank.transferMoney("id", "test2", 1)).thenReturn(true);
         assertTrue(atm.transferMoney("test2", 1));
+        verify(bank, times(1)).transferMoney("id", "test2", 1);;
     }
 }

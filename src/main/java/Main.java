@@ -42,6 +42,13 @@ public class Main {
 
                     System.out.println("User ID:");
                     String userId = reader.readLine();
+                    boolean success = atm.transferMoney(userId, amount);
+                    if (success) {
+                        System.out.println("Successfully transfered money!");
+                    } else{
+                        System.out.println("Failed to transfer please try again.");
+                    }
+                    showOptions(reader,atm, user);
                     break;
                 }
                 case "e": {
@@ -67,6 +74,9 @@ public class Main {
             throw new RuntimeException(e); //This should not be possible so we want to just end the application here
         } catch (ExcessiveWithdrawAmount e) {
             System.out.println("The amount you entered is more than your total balance. Please try again with a lower amount.");
+            showOptions(reader,atm, user);
+        } catch (InvalidAmount e) {
+            System.out.println("The amount you entered is invalid (likely at or below zero)");
             showOptions(reader,atm, user);
         }
     }

@@ -70,10 +70,12 @@ public class ATM {
         return bankUser.getBalance();
     }
 
-    public double deposit(double amount) {
+    public double deposit(double amount) throws InvalidAmount {
         //Get latest instance of user from bank and double check pin code to make sure it's real
         User latestUser = getLatestUser(this.currentUser.getId());
-
+        if (amount <= 0) {
+            throw new InvalidAmount("Invalid Amount");
+        }
         //Change the money by amount in user object
         double bal = latestUser.deposit(amount);
 
@@ -86,9 +88,13 @@ public class ATM {
 
     }
 
-    public double withdraw(double amount) throws ExcessiveWithdrawAmount {
+    public double withdraw(double amount) throws ExcessiveWithdrawAmount, InvalidAmount {
         //Get latest instance of user from bank and double check pin code to make sure it's real
         User latestUser = getLatestUser(this.currentUser.getId());
+
+        if (amount <= 0) {
+            throw new InvalidAmount("Invalid Amount");
+        }
 
         if (latestUser.getBalance() < amount) {
             throw new ExcessiveWithdrawAmount("Can not withdraw this much.");
@@ -105,8 +111,8 @@ public class ATM {
         return bal;
     }
 
-    public boolean transferMoney(String toUserId, double amount) {
-        return true;
+    public boolean transferMoney(String toUserId, double amount) throws NoUserFoundException, InvalidAmount, ExcessiveWithdrawAmount {
+        return getBank().transferMoney(getCurrentUser().getId(), toUserId, amount);
     }
 
 }
