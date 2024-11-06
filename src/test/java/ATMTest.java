@@ -1,5 +1,6 @@
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -25,7 +26,8 @@ class ATMTest {
         atm = new ATM(bank);  // Manually set atm each time
         // Stub the bank retrieval of user
         if (!testInfo.getTags().contains("NoUserStub")) { //We don't always want to stub the user, but we do most of the time
-            when(bank.getUserById("id")).thenReturn(testUser);
+            ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
+            when(bank.getUserById(captor.capture())).thenReturn(testUser);
         }
         atm.setCurrentUser(testUser);  // Set the user in the ATM
     }
@@ -42,7 +44,7 @@ class ATMTest {
         // Act and Assert
         assertThrows(NoUserFoundException.class, () -> atm.checkBalance());
 
-        //verify(bank, times(1));
+        verify(bank, times(1)).getUserById("id");;
     }
     @Test
     @DisplayName("Balance Is Ten")
@@ -52,16 +54,18 @@ class ATMTest {
         when(bank.getUserById("id")).thenReturn(testUser);
 
         assertEquals(10.0, atm.checkBalance());
+        verify(bank, times(1)).getUserById("id");;
     }
 
     @Test
     @DisplayName("Card function sets user")
     public void testThatCardFunctionSetsUser() {
-
+        when(bank.getUserById("id")).thenReturn(testUser);
         atm.insertCard("id");
 
         //Is same
         assertSame(atm.getCurrentUser(), testUser);
+        verify(bank, times(1)).getUserById("id");; //We retrieve user once
     }
 
     @Test
@@ -74,6 +78,7 @@ class ATMTest {
 
         //It is now locked
         assertThrows(CardLockedException.class, () -> atm.enterPin("wrong"));
+        verify(bank, times(3)).updateUser(atm.getCurrentUser());; //As we update the amount of failed attempts it should update 3x
     }
 
     @Test
@@ -89,6 +94,7 @@ class ATMTest {
         assertThrows(CardLockedException.class, () -> atm.enterPin("wrong"));
         assertThrows(CardLockedException.class, () -> atm.enterPin("wrong"));
         assertThrows(CardLockedException.class, () -> atm.enterPin("wrong"));
+        verify(bank, times(3)).updateUser(atm.getCurrentUser());; //As we update the amount of failed attempts it should update 3x. Then nothing as it's already locked.
     }
 
     @Test
@@ -97,12 +103,15 @@ class ATMTest {
 
         assertDoesNotThrow(() -> atm.enterPin("pin"));
         assertTrue(atm.loggedIn);
+        verify(bank, times(1)).updateUser(atm.getCurrentUser());;
     }
 
     @Test
     @DisplayName("Null pin does not crash")
     public void testThatNullDoesntCrash() {
+
         assertDoesNotThrow(() -> atm.enterPin(null));
+        verify(bank, times(1)).updateUser(atm.getCurrentUser());;
     }
 
     @Test
@@ -150,6 +159,7 @@ class ATMTest {
     public void testTransferNullUser() throws NoUserFoundException, InvalidAmount, ExcessiveWithdrawAmount {
         when(bank.transferMoney("id", null, 1)).thenThrow(new NoUserFoundException("Invalid"));
         assertThrows(NoUserFoundException.class, () -> atm.transferMoney(null, 1));
+        verify(bank, times(0)).updateUser(atm.getCurrentUser());;
     }
 
     @Tag("NoUserStub")
@@ -158,6 +168,7 @@ class ATMTest {
     public void testTransferExcessiveAmount() throws NoUserFoundException, InvalidAmount, ExcessiveWithdrawAmount {
         when(bank.transferMoney("id", "test2", 1000000000)).thenThrow(new ExcessiveWithdrawAmount("Invalid"));
         assertThrows(ExcessiveWithdrawAmount.class, () -> atm.transferMoney("test2", 1000000000));
+        verify(bank, times(1)).transferMoney("id", "test2", 1000000000);;
     }
 
     @Tag("NoUserStub")
@@ -166,6 +177,8 @@ class ATMTest {
     public void testInvalidUserTransfer() throws NoUserFoundException, InvalidAmount, ExcessiveWithdrawAmount {
         when(bank.transferMoney("id", "test2", 1)).thenThrow(new NoUserFoundException("Invalid"));
         assertThrows(NoUserFoundException.class, () -> atm.transferMoney("test2", 1));
+        verify(bank, times(1)).transferMoney("id", "test2", 1);;
+
     }
 
     @Tag("NoUserStub")
@@ -174,6 +187,8 @@ class ATMTest {
     public void testTransferFailOnLessThanZero() throws NoUserFoundException, InvalidAmount, ExcessiveWithdrawAmount {
         when(bank.transferMoney("id", "test2", -1)).thenThrow(new InvalidAmount("Invalid"));
         assertThrows(InvalidAmount.class, () -> atm.transferMoney("test2", -1));
+        verify(bank, times(1)).transferMoney("id", "test2", -1);;
+
     }
 
     @Tag("NoUserStub")
@@ -183,5 +198,6 @@ class ATMTest {
         when(bank.transferMoney("id", "test2", 1)).thenReturn(true);
         assertTrue(atm.transferMoney("test2", 1));
         verify(bank, times(1)).transferMoney("id", "test2", 1);;
+
     }
 }
